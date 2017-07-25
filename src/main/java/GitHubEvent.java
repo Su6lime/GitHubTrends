@@ -1,18 +1,28 @@
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.xml.internal.bind.v2.TODO;
+
 /**
  * Created by Ali on 7/25/17.
  */
 public class GitHubEvent {
 
     String id;
-
     String type;
 
-    GitHubEvent() {}
+//    TODO get public attribute
+//    @JsonProperty("public")
+//    String isPublic;
 
-    GitHubEvent(String id, String type) {
-        this.id = id;
-        this.type = type;
+    Actor actor;
+    Repo repo;
+
+    public class Actor {
+        String id;
+
     }
+    public class Repo {
+        String id;
+        String name;
 
-
+    }
 }
