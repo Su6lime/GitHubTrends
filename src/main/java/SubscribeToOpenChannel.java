@@ -6,8 +6,7 @@ import com.satori.rtm.*;
 import com.satori.rtm.model.*;
 
 import java.util.LinkedList;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 public class SubscribeToOpenChannel {
@@ -15,10 +14,14 @@ public class SubscribeToOpenChannel {
     static final String endpoint = "wss://open-data.api.satori.com";
     static final String appkey = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
     static final String channel = "github-events";
-    static private BlockingQueue<AnyJson> messages = new LinkedBlockingQueue<AnyJson>();
+
+    static private Queue<AnyJson> messages = new LinkedList<AnyJson>();
     static private Analyser analyser = new Analyser();
+    static private boolean flag = true;
 
     public static void main(String[] args) throws InterruptedException {
+        final long startTime = System.currentTimeMillis();
+        System.out.println(startTime);
         final RtmClient client = new RtmClientBuilder(endpoint, appkey)
                 .setListener(new RtmClientAdapter() {
                     @Override
@@ -28,16 +31,16 @@ public class SubscribeToOpenChannel {
                 })
                 .build();
 
-
         SubscriptionAdapter listener = new SubscriptionAdapter() {
             @Override
             public void onSubscriptionData(SubscriptionData data) {
                 for (AnyJson json : data.getMessages()) {
-                    try {
-                        messages.put(json);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                        messages.add(json);
+                        long currentTime = System.currentTimeMillis();
+                        if(currentTime - startTime > 1*60*1000) {
+                            flag = false;
+                            break;
+                        }
                 }
             }
         };
@@ -51,16 +54,14 @@ public class SubscribeToOpenChannel {
     static private class Analyser extends Thread {
 
         public void run(){
-            while(isAlive()){
-                AnyJson json = null;
-                try {
-                    json = messages.poll(100, TimeUnit.HOURS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            while(!messages.isEmpty() || flag){
+                AnyJson json = messages.poll();
+                if(json == null)
+                    continue;
                 GitHubEvent event = json.convertToType(GitHubEvent.class);
                 Data.addRepoID(event.repo.id);
             }
+            System.out.println(Data.getMost());
         }
     }
 

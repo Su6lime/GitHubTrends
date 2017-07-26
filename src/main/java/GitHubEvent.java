@@ -1,4 +1,3 @@
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.xml.internal.bind.v2.TODO;
 
 /**
