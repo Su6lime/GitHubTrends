@@ -17,7 +17,8 @@ public class Data {
             repoFrequency.put(ID, 1);
     }
 
-    public static String getMostFrequentRepo() {
+    protected static String getMostFrequentRepo() {
+
         int max = 0;
         String mID = "";
         for (String ID: repoFrequency.keySet())

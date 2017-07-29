@@ -5,6 +5,7 @@
 import com.satori.rtm.*;
 import com.satori.rtm.model.*;
 
+import javax.xml.transform.Source;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -38,9 +39,10 @@ public class SubscribeToOpenChannel {
             @Override
             public void onSubscriptionData(SubscriptionData data) {
 
-                System.out.println("num of data packets = "+ ++i);
+//                System.out.println("num of data packets = "+ ++i);
                 for (AnyJson json : data.getMessages()) {
-                    System.out.println("num of messages = "+ ++j);
+//                    System.out.println("num of messages = "+ ++j);
+                    j++;
                     try {
                         jsonMessages.put(json);
                     } catch (InterruptedException e) {
@@ -48,11 +50,12 @@ public class SubscribeToOpenChannel {
                     }
                 }
                 long currentTime = System.currentTimeMillis();
-                if(currentTime - startTime > 5*60*1000) {
+                if(currentTime - startTime > 1*60*1000) {
                     flag1 = true;
                     client.shutdown();
                     System.out.println("stops");
                     parser.interrupt();
+                    System.out.println("num of messages = "+ j);
                 }
             }
         };
@@ -78,7 +81,7 @@ public class SubscribeToOpenChannel {
                     else
                         continue;
                 }
-                System.out.println("after take 1");
+//                System.out.println("after take 1");
                 GitHubEvent event = json.convertToType(GitHubEvent.class);
                 try {
                     eventObjects.put(event);
@@ -105,12 +108,13 @@ public class SubscribeToOpenChannel {
                     else
                         continue;
                 }
-                System.out.println("after take 2");
-                Data.addRepoID(event.repo.id);
-                Data.addActorID(event.actor.id);
+//                System.out.println("after take 2");
+//                Data.addRepoID(event.repo.id);
+//                Data.addActorID(event.actor.id);
+                System.out.println("ID : " + event.id);
             }
-            System.out.println(Data.getMostFrequentRepo());
-            System.out.println(Data.getMostFrequentActor());
+//            System.out.println(Data.getMostFrequentRepo());
+//            System.out.println(Data.getMostFrequentActor());
         }
     }
 
