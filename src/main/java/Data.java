@@ -1,14 +1,15 @@
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by Ali on 7/25/17.
  */
 public class Data {
 
-    static private HashMap<String, Integer> repoFrequency = new HashMap();
-    static private HashMap<String, Integer> actorFrequency = new HashMap();
+    static private LinkedHashMap<String, Integer> repoFrequency = new LinkedHashMap<>();
+    static private LinkedHashMap<String, Integer> actorFrequency = new LinkedHashMap<>();
 
     public static void addRepoID(String ID) {
         if(repoFrequency.containsKey(ID))
