@@ -10,14 +10,15 @@ public class Data {
     static private HashMap<String, Integer> repoFrequency = new HashMap();
     static private HashMap<String, Integer> actorFrequency = new HashMap();
 
-    public static void addRepoID(String ID) {
-        if(repoFrequency.containsKey(ID))
-            repoFrequency.put(ID, 1 + repoFrequency.get(ID));
+    synchronized public static void addRepoID(String ID) {
+        Integer oldValue = repoFrequency.get(ID);
+        if(oldValue != null)
+            repoFrequency.put(ID, 1 + oldValue);
         else
             repoFrequency.put(ID, 1);
     }
 
-    protected static String getMostFrequentRepo() {
+    synchronized protected static String getMostFrequentRepo() {
 
         int max = 0;
         String mID = "";
@@ -29,14 +30,15 @@ public class Data {
         return "RepoID : " + mID + " frequency = " + max;
     }
 
-    public static void addActorID(String ID) {
-        if(actorFrequency.containsKey(ID))
-            actorFrequency.put(ID, 1 + actorFrequency.get(ID));
+    synchronized public static void addActorID(String ID) {
+        Integer oldValue = actorFrequency.get(ID);
+        if(oldValue != null)
+            actorFrequency.put(ID, 1 + oldValue);
         else
             actorFrequency.put(ID, 1);
     }
 
-    public static String getMostFrequentActor() {
+    synchronized public static String getMostFrequentActor() {
         int max = 0;
         String mID = "";
         for (String ID: actorFrequency.keySet())
