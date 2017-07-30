@@ -1,6 +1,7 @@
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
-import java.util.HashMap;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by Ali on 7/25/17.
@@ -27,7 +28,7 @@ public class Data {
                 max = repoFrequency.get(ID);
                 mID = ID;
             }
-        return "RepoID : " + mID + " frequency = " + max;
+        return "RepoID : " + mID + " frequency = " + max+ " num of Repositories = " + repoFrequency.size();
     }
 
     synchronized public static void addActorID(String ID) {
@@ -46,7 +47,7 @@ public class Data {
                 max = actorFrequency.get(ID);
                 mID = ID;
             }
-        return "ActorID : " + mID + " frequency = " + max;
+        return "ActorID : " + mID + " frequency = " + max + " num of Actors = " + actorFrequency.size();
     }
 
 }

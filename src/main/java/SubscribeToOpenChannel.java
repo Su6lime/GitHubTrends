@@ -111,6 +111,7 @@ public class SubscribeToOpenChannel {
 //                System.out.println("after take 2");
                 Data.addRepoID(event.repo.id);
                 Data.addActorID(event.actor.id);
+                Storage.storeInFile(event);
 //                System.out.println("ID : " + event.id);
             }
         }
