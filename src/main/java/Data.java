@@ -1,15 +1,15 @@
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by Ali on 7/25/17.
  */
 public class Data {
 
-    static private LinkedHashMap<String, Integer> repoFrequency = new LinkedHashMap<>();
-    static private LinkedHashMap<String, Integer> actorFrequency = new LinkedHashMap<>();
+    static private HashMap<String, Integer> repoFrequency = new HashMap();
+    static private HashMap<String, Integer> actorFrequency = new HashMap();
 
     synchronized public static void addRepoID(String ID) {
         Integer oldValue = repoFrequency.get(ID);
@@ -28,7 +28,7 @@ public class Data {
                 max = repoFrequency.get(ID);
                 mID = ID;
             }
-        return "RepoID : " + mID + " frequency = " + max;
+        return "RepoID : " + mID + " frequency = " + max+ " num of Repositories = " + repoFrequency.size();
     }
 
     synchronized public static void addActorID(String ID) {
@@ -47,7 +47,7 @@ public class Data {
                 max = actorFrequency.get(ID);
                 mID = ID;
             }
-        return "ActorID : " + mID + " frequency = " + max;
+        return "ActorID : " + mID + " frequency = " + max + " num of Actors = " + actorFrequency.size();
     }
 
 }
