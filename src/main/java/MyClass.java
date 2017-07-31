@@ -4,7 +4,6 @@ import com.satori.rtm.model.*;
 
 import javax.swing.*;
 import java.io.*;
-import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -21,6 +20,7 @@ public class MyClass {
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<>();
     static private BlockingQueue<AnyJson> listOfMessages = new LinkedBlockingQueue<>();
     static private boolean isWorkEnded = false;
+    static private DataAnalyser dataAnalyser = new DataAnalyser();
 
     public static void main(String[] args) throws InterruptedException {
         final RtmClient client = new RtmClientBuilder(ENDPOINT, APPKEY)
@@ -189,8 +189,8 @@ public class MyClass {
                 }
                 processCommonFiles(new File(PATH + filesInDir[i]));
             }
-            JOptionPane.showMessageDialog(null, Data.getMostFrequentRepo(), "Output", JOptionPane.INFORMATION_MESSAGE);
-            JOptionPane.showMessageDialog(null, Data.getMostFrequentActor(), "Output", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentRepo(), "Output", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentActor(), "Output", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -240,8 +240,8 @@ public class MyClass {
             String line;
             while ((line = br.readLine()) != null) {
                 String s[] = line.split(" ");
-                Data.addRepoID(s[1]);
-                Data.addActorID(s[2]);
+                dataAnalyser.addRepoID(s[1]);
+                dataAnalyser.addActorID(s[2]);
             }
             br.close();
         } catch (FileNotFoundException e) {
@@ -270,8 +270,8 @@ public class MyClass {
                         System.err.println("First file stated to process.");
                         while ((line = br.readLine()) != null) {
                             String array[] = line.split(" ");
-                            Data.addRepoID(array[1]);
-                            Data.addActorID(array[2]);
+                            dataAnalyser.addRepoID(array[1]);
+                            dataAnalyser.addActorID(array[2]);
                         }
                         break;
                     }
@@ -285,8 +285,8 @@ public class MyClass {
             try {
                 while ((line = br.readLine()) != null) {
                     String s[] = line.split(" ");
-                    Data.addRepoID(s[1]);
-                    Data.addActorID(s[2]);
+                    dataAnalyser.addRepoID(s[1]);
+                    dataAnalyser.addActorID(s[2]);
                     if (Long.parseLong(s[0]) > time) ;
                     break;
                 }
