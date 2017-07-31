@@ -4,6 +4,7 @@
 
 import com.satori.rtm.*;
 import com.satori.rtm.model.*;
+import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
@@ -14,6 +15,7 @@ public class SubscribeToOpenChannel {
 
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<AnyJson>();
     static private BlockingQueue<GitHubEvent> eventObjects = new LinkedBlockingQueue<GitHubEvent>();
+    static private DataAnalyser dataAnalyser = new DataAnalyser();
 //    static private Subscriber subscriber = new Subscriber();
 //    static private Analyser analyser = new Analyser();
 //    static private Parser parser = new Parser();
@@ -26,14 +28,22 @@ public class SubscribeToOpenChannel {
 
         Scanner scanner = new Scanner(System.in);
         while(true) {
-            String command = scanner.nextLine();
-            switch (command) {
-                case "Hot":
-                    System.out.println(Data.getMostFrequentRepo());
-                    break;
-                case "Dev":
-                    System.out.println(Data.getMostFrequentActor());
-                    break;
+            String[] data = scanner.nextLine().split(" ");
+
+            if(data.length == 3) {
+                Long startTime = Long.parseLong(data[1]);
+                Long endTime = Long.parseLong(data[2]);
+                new AnalyseThread(startTime, endTime, data[0]).start();
+            } else {
+                switch (data[0]) {
+                    case "Hot":
+                        System.out.println(dataAnalyser.getMostFrequentRepo());
+                        new AnalyseThread(System.currentTimeMillis()-100000, System.currentTimeMillis()-10000, data[0]).start();
+                        break;
+                    case "Dev":
+                        System.out.println(dataAnalyser.getMostFrequentActor());
+                        break;
+                }
             }
         }
     }
@@ -109,8 +119,8 @@ public class SubscribeToOpenChannel {
                     e.printStackTrace();
                 }
 //                System.out.println("after take 2");
-                Data.addRepoID(event.repo.id);
-                Data.addActorID(event.actor.id);
+                dataAnalyser.addRepoID(event.repo.id);
+                dataAnalyser.addActorID(event.actor.id);
                 Storage.storeInFile(event);
 //                System.out.println("ID : " + event.id);
             }

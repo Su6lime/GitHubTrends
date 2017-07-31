@@ -12,6 +12,9 @@ public class GitHubEvent {
 //    @JsonProperty("public")
 //    String isPublic;
 
+    //TODO get CreatedAt and translate it to miliseconds
+
+
     Actor actor;
     Repo repo;
 

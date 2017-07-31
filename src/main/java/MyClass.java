@@ -14,13 +14,15 @@ public class MyClass {
     static final String endpoint = "wss://open-data.api.satori.com";
     static final String appkey = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
     static final String channel = "github-events";
-    static String path = "/home/amirphl/Desktop/JSonFile/";
+    static String path = "";
+    static private DataAnalyser dataAnalyser = new DataAnalyser();
 
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<>();
     static private BlockingQueue<AnyJson> listOfMessages = new LinkedBlockingQueue<>();
     static private Parser parser = new Parser();
     static private boolean isWorkEnded = false;
     static int j = 0;
+    static private int delayinMin = 1;
 
     static private JSONObject jsonObject = new JSONObject();
     static private JSONArray array = new JSONArray();
@@ -83,7 +85,7 @@ public class MyClass {
             long t = System.currentTimeMillis();
             FileWriter fileWriter = null;
             try {
-                fileWriter = new FileWriter(new File(path + System.currentTimeMillis()), true);
+                fileWriter = new FileWriter(new File(path + System.currentTimeMillis()) + ".txt", true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -109,22 +111,22 @@ public class MyClass {
                     e.printStackTrace();
                 }
 
-                if ((System.currentTimeMillis() - t) > 1 * 60 * 1000)
+                if ((System.currentTimeMillis() - t) > delayinMin * 60 * 1000)
                     try {
-                        System.out.println("1 min passed.");
+                        System.out.println(delayinMin + " min passed.");
                         fileWriter.close();
-                        fileWriter = new FileWriter(new File(path + System.currentTimeMillis()));
+                        fileWriter = new FileWriter(new File(path + System.currentTimeMillis()) + ".txt");
                         t = System.currentTimeMillis();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 //                array = new JSONArray();
 //                jsonObject = new JSONObject();
-//                Data.addRepoID(event.repo.id);
-//                Data.addActorID(event.actor.id);
+//                dataAnalyser.addRepoID(event.repo.id);
+//                dataAnalyser.addActorID(event.actor.id);
             }
-//            System.out.println(Data.getMostFrequentRepo());
-//            System.out.println(Data.getMostFrequentActor());
+//            System.out.println(dataAnalyser.getMostFrequentRepo());
+//            System.out.println(dataAnalyser.getMostFrequentActor());
 //            System.out.println("number of data received : " + j);
         }
     }
@@ -167,8 +169,8 @@ public class MyClass {
                 }
                 process(new File(path + filesInDir[i]));
             }
-            System.out.println(Data.getMostFrequentRepo());
-            System.out.println(Data.getMostFrequentActor());
+            System.out.println(dataAnalyser.getMostFrequentRepo());
+            System.out.println(dataAnalyser.getMostFrequentActor());
         }
     }
 
@@ -179,8 +181,8 @@ public class MyClass {
             String line;
             while ((line = br.readLine()) != null) {
                 String s[] = line.split(" ");
-                Data.addRepoID(s[1]);
-                Data.addActorID(s[2]);
+                dataAnalyser.addRepoID(s[1]);
+                dataAnalyser.addActorID(s[2]);
             }
             br.close();
         } catch (FileNotFoundException e) {
@@ -200,8 +202,8 @@ public class MyClass {
                 if (s[0].equals(String.valueOf(time))) {
                     while ((line = br.readLine()) != null) {
                         String array[] = line.split(" ");
-                        Data.addRepoID(array[1]);
-                        Data.addActorID(array[2]);
+                        dataAnalyser.addRepoID(array[1]);
+                        dataAnalyser.addActorID(array[2]);
                     }
                     break;
                 }
@@ -222,8 +224,8 @@ public class MyClass {
             String line;
             while ((line = br.readLine()) != null) {
                 String s[] = line.split(" ");
-                Data.addRepoID(s[1]);
-                Data.addActorID(s[2]);
+                dataAnalyser.addRepoID(s[1]);
+                dataAnalyser.addActorID(s[2]);
                 if (s[0].equals(String.valueOf(time)))
                     break;
             }

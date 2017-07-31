@@ -6,12 +6,12 @@ import java.util.*;
 /**
  * Created by Ali on 7/25/17.
  */
-public class Data {
+public class DataAnalyser {
 
-    static private HashMap<String, Integer> repoFrequency = new HashMap();
-    static private HashMap<String, Integer> actorFrequency = new HashMap();
+    private HashMap<String, Integer> repoFrequency = new HashMap();
+    private HashMap<String, Integer> actorFrequency = new HashMap();
 
-    synchronized public static void addRepoID(String ID) {
+    synchronized public void addRepoID(String ID) {
         Integer oldValue = repoFrequency.get(ID);
         if(oldValue != null)
             repoFrequency.put(ID, 1 + oldValue);
@@ -19,7 +19,7 @@ public class Data {
             repoFrequency.put(ID, 1);
     }
 
-    synchronized protected static String getMostFrequentRepo() {
+    synchronized protected String getMostFrequentRepo() {
 
         int max = 0;
         String mID = "";
@@ -31,7 +31,7 @@ public class Data {
         return "RepoID : " + mID + " frequency = " + max+ " num of Repositories = " + repoFrequency.size();
     }
 
-    synchronized public static void addActorID(String ID) {
+    synchronized public void addActorID(String ID) {
         Integer oldValue = actorFrequency.get(ID);
         if(oldValue != null)
             actorFrequency.put(ID, 1 + oldValue);
@@ -39,7 +39,7 @@ public class Data {
             actorFrequency.put(ID, 1);
     }
 
-    synchronized public static String getMostFrequentActor() {
+    synchronized public String getMostFrequentActor() {
         int max = 0;
         String mID = "";
         for (String ID: actorFrequency.keySet())
