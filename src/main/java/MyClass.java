@@ -1,36 +1,29 @@
 
 import com.satori.rtm.*;
 import com.satori.rtm.model.*;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
+import javax.swing.*;
 import java.io.*;
+import java.util.Arrays;
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MyClass {
 
-    static final String endpoint = "wss://open-data.api.satori.com";
-    static final String appkey = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
-    static final String channel = "github-events";
-    static String path = "";
-    static private DataAnalyser dataAnalyser = new DataAnalyser();
+    private static final String ENDPOINT = "wss://open-data.api.satori.com";
+    private static final String APPKEY = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
+    private static final String CHANNEL = "github-events";
+    private static final String PATH = "/home/amirphl/Desktop/JSonFile/";
 
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<>();
     static private BlockingQueue<AnyJson> listOfMessages = new LinkedBlockingQueue<>();
-    static private Parser parser = new Parser();
     static private boolean isWorkEnded = false;
-    static int j = 0;
-    static private int delayinMin = 1;
-
-    static private JSONObject jsonObject = new JSONObject();
-    static private JSONArray array = new JSONArray();
-
-    static final long startTime = System.currentTimeMillis();
 
     public static void main(String[] args) throws InterruptedException {
-        final RtmClient client = new RtmClientBuilder(endpoint, appkey)
+        final RtmClient client = new RtmClientBuilder(ENDPOINT, APPKEY)
                 .setListener(new RtmClientAdapter() {
                     @Override
                     public void onEnterConnected(RtmClient client) {
@@ -45,47 +38,69 @@ public class MyClass {
 
             @Override
             public void onSubscriptionData(SubscriptionData data) {
-                long currentTime = System.currentTimeMillis();
-
-
-//                System.out.println("num of data packets = " + ++i);
                 for (AnyJson json : data.getMessages()) {
-//                    System.out.println("num of messages = " + ++j);
-//                    j++;
                     try {
                         jsonMessages.put(json);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-//                if ((currentTime - startTime) > 1 * 60 * 1000) {
-//                    isWorkEnded = true;
-//                    client.shutdown();
-//                    System.out.println("stops");
-//                }
             }
         };
 
-        client.createSubscription(channel, SubscriptionMode.SIMPLE, listener);
+        client.createSubscription(CHANNEL, SubscriptionMode.SIMPLE, listener);
 
         client.start();
 
-        parser.start();
+        new Parser().start();
 
+        while (true)
+            waitForUserCommand();
+    }
+
+    /**
+     * This method waits for user to enter the startTime time and stop time.
+     * startTime time : Time that user wants to startTime processing the json Files.
+     * stop time : Time that user wants to terminate processing the json Files.
+     *
+     * @return returns nothing
+     */
+    private static void waitForUserCommand() {
         Scanner scanner = new Scanner(System.in);
-        int startTime = scanner.nextInt();
-        int stopTime = scanner.nextInt();
+        double startTime;
+        double stopTime;
+        try {
+            startTime = scanner.nextDouble();
+            stopTime = scanner.nextDouble();
+        } catch (InputMismatchException e) {
+            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
+            waitForUserCommand();
+            return;
+        } catch (NoSuchElementException e) {
+            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
+            waitForUserCommand();
+            return;
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
+            waitForUserCommand();
+            return;
+        }
         Writer writer = new Writer(System.currentTimeMillis() - (long) (startTime * 60 * 1000), System.currentTimeMillis() - (long) (stopTime * 60 * 1000));
         writer.start();
     }
 
-    static private class Parser extends Thread {
+    /**
+     * This class gets useful information from any Json object that is in list ,
+     * then store them in some files
+     * The path that information stores in it , each 1 minute changes.
+     */
+    private static class Parser extends Thread {
 
         public void run() {
-            long t = System.currentTimeMillis();
+            long initialTime = System.currentTimeMillis();
             FileWriter fileWriter = null;
             try {
-                fileWriter = new FileWriter(new File(path + System.currentTimeMillis()) + ".txt", true);
+                fileWriter = new FileWriter(new File(PATH + initialTime), true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -95,11 +110,7 @@ public class MyClass {
                     continue;
 
                 GitHubEvent event = json.convertToType(GitHubEvent.class);
-//                array.add(event.repo.id);
-//                array.add(event.actor.id);
-//                jsonObject.put(System.currentTimeMillis(), array);
                 try {
-//                    fileWriter.write(jsonObject.toString() + " ");
                     fileWriter.write(String.valueOf(System.currentTimeMillis()));
                     fileWriter.write(" ");
                     fileWriter.write(event.repo.id);
@@ -111,78 +122,126 @@ public class MyClass {
                     e.printStackTrace();
                 }
 
-                if ((System.currentTimeMillis() - t) > delayinMin * 60 * 1000)
+                if ((System.currentTimeMillis() - initialTime) > 1 * 60 * 1000) //1 * 60 *1000 is equals to 1 minute
                     try {
-                        System.out.println(delayinMin + " min passed.");
+                        System.out.println("1 minute passed.");
                         fileWriter.close();
-                        fileWriter = new FileWriter(new File(path + System.currentTimeMillis()) + ".txt");
-                        t = System.currentTimeMillis();
+                        fileWriter = new FileWriter(new File(PATH + System.currentTimeMillis()));
+                        initialTime = System.currentTimeMillis();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-//                array = new JSONArray();
-//                jsonObject = new JSONObject();
-//                dataAnalyser.addRepoID(event.repo.id);
-//                dataAnalyser.addActorID(event.actor.id);
             }
-//            System.out.println(dataAnalyser.getMostFrequentRepo());
-//            System.out.println(dataAnalyser.getMostFrequentActor());
-//            System.out.println("number of data received : " + j);
         }
     }
 
-    static private class Writer extends Thread {
+    private static class Writer extends Thread {
 
-        private long start;
-        private long end;
+        private long startTime;
+        private long terminateTime;
         private int firstIndex;
         private int lastIndex;
 
         public Writer(long mStart, long mEnd) {
-            start = mStart;
-            end = mEnd;
+            startTime = mStart;
+            terminateTime = mEnd;
         }
 
         public void run() {
-            File directory = new File(path);
+            File directory = new File(PATH);
             String[] filesInDir = directory.list();
-            System.out.println(filesInDir.toString());
-            for (int i = 0; i < filesInDir.length; i++)
-                if (Long.parseLong(filesInDir[i]) >= start) {
-                    firstIndex = i - 1;
-                    break;
-                }
+            long[] longNums = new long[filesInDir.length];
 
-            for (int i = filesInDir.length - 1; i >= 0; i--)
-                if (Long.parseLong(filesInDir[i]) <= end) {
-                    lastIndex = i;
-                }
+            for (int i = 0; i < filesInDir.length; i++) {
+                longNums[i] = Long.parseLong(filesInDir[i]);
+            }
 
+            quickSort(longNums, 0, filesInDir.length - 1);
+
+            try {
+                for (int i = 0; i < longNums.length; i++) {
+                    if (longNums[i] >= startTime) {
+                        firstIndex = i - 1;
+                        break;
+                    }
+                }
+                for (int i = longNums.length - 1; i >= 0; i--) {
+                    System.out.println(longNums[i]);
+                    if (longNums[i] <= terminateTime) {
+                        lastIndex = i;
+                        break;
+                    }
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                JOptionPane.showMessageDialog(null, "There is no information in data base in time you want.", "Error", JOptionPane.ERROR_MESSAGE);
+                waitForUserCommand();
+                return;
+            }
+            System.out.println("first index :" + firstIndex + " " + "last index:" + lastIndex);
             for (int i = firstIndex; i <= lastIndex; i++) {
                 if (i == firstIndex) {
-                    processFirstFile(new File(path + filesInDir[i]), start);
+                    processSpecialFiles(new File(PATH + filesInDir[i]), startTime, "I am First File");
                     continue;
                 }
                 if (i == lastIndex) {
-                    processLastFile(new File(filesInDir[i]), start);
+                    processSpecialFiles(new File(PATH + filesInDir[i]), startTime, "I am Last File");
                     continue;
                 }
-                process(new File(path + filesInDir[i]));
+                processCommonFiles(new File(PATH + filesInDir[i]));
             }
-            System.out.println(dataAnalyser.getMostFrequentRepo());
-            System.out.println(dataAnalyser.getMostFrequentActor());
+            JOptionPane.showMessageDialog(null, Data.getMostFrequentRepo(), "Output", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, Data.getMostFrequentActor(), "Output", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    private static void process(File file) {
+    public static int partition(long arr[], int left, int right) {
+        int i = left, j = right;
+        long tmp;
+
+        long pivot = arr[(left + right) / 2];
+
+        while (i <= j) {
+            while (arr[i] < pivot)
+                i++;
+
+            while (arr[j] > pivot)
+                j--;
+
+            if (i <= j) {
+                tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+                i++;
+                j--;
+            }
+        }
+        return i;
+    }
+
+
+    private static void quickSort(long arr[], int left, int right) {
+
+        int index = partition(arr, left, right);
+
+        if (left < index - 1)
+
+            quickSort(arr, left, index - 1);
+
+        if (index < right)
+
+            quickSort(arr, index, right);
+
+    }
+
+    private static void processCommonFiles(File file) {
+        System.err.println("I entered in processCommonFiles method");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
-            StringBuilder sb = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {
                 String s[] = line.split(" ");
-                dataAnalyser.addRepoID(s[1]);
-                dataAnalyser.addActorID(s[2]);
+                Data.addRepoID(s[1]);
+                Data.addActorID(s[2]);
             }
             br.close();
         } catch (FileNotFoundException e) {
@@ -192,46 +251,52 @@ public class MyClass {
         }
     }
 
-    private static void processFirstFile(File file, long time) {
+    private static void processSpecialFiles(File file, long time, String identifier) {
+        System.err.println("I entered in processSpecialFiles");
+        BufferedReader br = null;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String s[] = line.split(" ");
-                if (s[0].equals(String.valueOf(time))) {
-                    while ((line = br.readLine()) != null) {
-                        String array[] = line.split(" ");
-                        dataAnalyser.addRepoID(array[1]);
-                        dataAnalyser.addActorID(array[2]);
+            br = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String line;
+        if (identifier.equals("I am First File"))
+            try {
+                line = br.readLine();
+                System.out.println(line);
+                while ((line = br.readLine()) != null) {
+                    String s[] = line.split(" ");
+                    if (time > Long.parseLong(s[0])) {
+                        System.err.println("First file stated to process.");
+                        while ((line = br.readLine()) != null) {
+                            String array[] = line.split(" ");
+                            Data.addRepoID(array[1]);
+                            Data.addActorID(array[2]);
+                        }
+                        break;
                     }
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        else
+            try {
+                while ((line = br.readLine()) != null) {
+                    String s[] = line.split(" ");
+                    Data.addRepoID(s[1]);
+                    Data.addActorID(s[2]);
+                    if (Long.parseLong(s[0]) > time) ;
                     break;
                 }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            br.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private static void processLastFile(File file, long time) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String s[] = line.split(" ");
-                dataAnalyser.addRepoID(s[1]);
-                dataAnalyser.addActorID(s[2]);
-                if (s[0].equals(String.valueOf(time)))
-                    break;
-            }
             br.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
