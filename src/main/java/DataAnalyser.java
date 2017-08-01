@@ -1,12 +1,10 @@
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
  * Created by Ali on 7/25/17.
  */
 public class DataAnalyser {
+
 
     private HashMap<String, Integer> repoFrequency = new HashMap();
     private HashMap<String, Integer> actorFrequency = new HashMap();
@@ -47,6 +45,7 @@ public class DataAnalyser {
                 max = actorFrequency.get(ID);
                 mID = ID;
             }
+
         return "ActorID : " + mID + " frequency = " + max + " num of Actors = " + actorFrequency.size();
     }
 

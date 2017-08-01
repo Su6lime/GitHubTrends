@@ -6,6 +6,8 @@ import com.satori.rtm.*;
 import com.satori.rtm.model.*;
 import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,34 +18,64 @@ public class SubscribeToOpenChannel {
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<AnyJson>();
     static private BlockingQueue<GitHubEvent> eventObjects = new LinkedBlockingQueue<GitHubEvent>();
     static private DataAnalyser dataAnalyser = new DataAnalyser();
-//    static private Subscriber subscriber = new Subscriber();
-//    static private Analyser analyser = new Analyser();
-//    static private Parser parser = new Parser();
 
     public static void main(String[] args) throws InterruptedException {
 
         new Subscriber().start();
         new Parser().start();
         new Analyser().start();
+        new UI().start();
 
-        Scanner scanner = new Scanner(System.in);
-        while(true) {
-            String[] data = scanner.nextLine().split(" ");
+    }
 
-            if(data.length == 3) {
-                Long startTime = Long.parseLong(data[1]);
-                Long endTime = Long.parseLong(data[2]);
-                new AnalyseThread(startTime, endTime, data[0]).start();
-            } else {
+    static private class UI extends Thread {
+
+        @Override
+        public void run() {
+            Scanner scanner = new Scanner(System.in);
+            while(true) {
+                try {
+                    runQuery(scanner.nextLine());
+                } catch (Exception e) {
+                    System.out.println("wrong format\n" + "type HELP for more information");
+                }
+            }
+        }
+
+        private static void runQuery(String query) throws ParseException, NumberFormatException {
+            String[] data = query.split(" ");
+            Long startTime;
+            Long endTime;
+
+            if (data.length == 1) {
                 switch (data[0]) {
                     case "Hot":
                         System.out.println(dataAnalyser.getMostFrequentRepo());
-                        new AnalyseThread(System.currentTimeMillis()-100000, System.currentTimeMillis()-10000, data[0]).start();
+//                        new AnalyseThread(System.currentTimeMillis()-100000, System.currentTimeMillis()-10000, data[0]).start();
                         break;
                     case "Dev":
                         System.out.println(dataAnalyser.getMostFrequentActor());
                         break;
+                    case "HELP":
+                        System.out.println("Under maintenance");
+                        break;
+                    default:
+                        throw new ParseException("", 1);
                 }
+            } else if (data.length == 3) {
+                startTime = Long.parseLong(data[1]);
+                endTime = Long.parseLong(data[2]);
+                new AnalyseThread(startTime, endTime, data[0]).start();
+            } else {
+                endTime = System.currentTimeMillis();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss zzz");
+                String time1 = query.substring(query.indexOf(' ') + 1);
+                if (time1.contains(",")) {
+                    endTime = sdf.parse(time1.substring(1 + time1.indexOf(','))).getTime();
+                    time1 = time1.substring(0, time1.indexOf(','));
+                }
+                startTime = sdf.parse(time1).getTime();
+                new AnalyseThread(startTime, endTime, data[0]).start();
             }
         }
     }

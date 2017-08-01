@@ -1,8 +1,7 @@
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.util.Date;
 import java.util.Scanner;
-import java.util.Timer;
+import java.util.TimeZone;
 
 /**
  * Created by Ali on 7/31/17.
@@ -38,14 +37,28 @@ public class AnalyseThread extends Thread {
                 dataAnalyser.addActorID(data[4]);
             }
         }
-        System.out.println("from " + startTime + " to " + endTime);
+        String result = "from " + startTime + " to " + endTime + "\n";
         switch (opearation) {
             case "Hot":
-                System.out.println(dataAnalyser.getMostFrequentRepo());
+                result += dataAnalyser.getMostFrequentRepo();
                 break;
             case "Dev":
-                System.out.println(dataAnalyser.getMostFrequentActor());
+                result += dataAnalyser.getMostFrequentActor();
                 break;
+        }
+        storeResults(result);
+    }
+
+    private void storeResults(String result) {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        Date startDate = new Date(startTime);
+        Date endDate = new Date(endTime);
+        try {
+            FileWriter fw = new FileWriter("Query result for " + opearation + " from " + startDate + " to " + endDate + ".txt");
+            fw.write(result);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
