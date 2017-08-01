@@ -1,28 +1,52 @@
 
 import com.satori.rtm.*;
 import com.satori.rtm.model.*;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class MyClass {
+/**
+ * created By Amir-PHL
+ */
+public class Main {
 
-    private static final String ENDPOINT = "wss://open-data.api.satori.com";
-    private static final String APPKEY = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
-    private static final String CHANNEL = "github-events";
-    private static final String PATH = "/home/amirphl/Desktop/JSonFile/";
+    private static final String PATH = "DataBase/";
 
     static private BlockingQueue<AnyJson> jsonMessages = new LinkedBlockingQueue<>();
-    static private BlockingQueue<AnyJson> listOfMessages = new LinkedBlockingQueue<>();
     static private boolean isWorkEnded = false;
     static private DataAnalyser dataAnalyser = new DataAnalyser();
 
+    private static JFrame frame = new JFrame();
+    private static JTextArea textArea = new JTextArea("Fill sections , then click on button");
+    private static JTextField startText = new JTextField("Start time");
+    private static JTextField terminateText = new JTextField("Terminate time");
+    private static JTextArea resultText = new JTextArea();
+    private static JButton button = new JButton("show result");
+
+    private static double startTime;
+    private static double terminateTime;
+
+    private static int timeCounter = 1;
+
+    /**
+     * This method reads JSon files from server of GitHub , then stores them in a Queue.
+     * This queue is a thread safe queue.
+     *
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException {
+        final String ENDPOINT = "wss://open-data.api.satori.com";
+        final String APPKEY = "783ecdCcb8c5f9E66A56cBFeeeB672C3";
+        final String CHANNEL = "github-events";
         final RtmClient client = new RtmClientBuilder(ENDPOINT, APPKEY)
                 .setListener(new RtmClientAdapter() {
                     @Override
@@ -34,7 +58,6 @@ public class MyClass {
 
 
         SubscriptionAdapter listener = new SubscriptionAdapter() {
-            int i = 0;
 
             @Override
             public void onSubscriptionData(SubscriptionData data) {
@@ -52,10 +75,34 @@ public class MyClass {
 
         client.start();
 
-        new Parser().start();
+        new Writer().start();
+
+        startText.addActionListener(new TextHandler());
+        terminateText.addActionListener(new TextHandler());
+        button.addActionListener(new ButtonHandler());
+        frame.setLayout(new FlowLayout());
+        frame.setSize(new Dimension(600, 300));
+        frame.setLocation(new Point(500, 500));
+        frame.setResizable(false);
+        frame.setTitle("Processor");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        textArea.setEditable(false);
+        resultText.setEditable(false);
+        resultText.setDisabledTextColor(Color.BLUE);
+        frame.add(startText);
+        frame.add(terminateText);
+        frame.add(button);
+        frame.add(textArea);
+        frame.add(resultText);
+        frame.setVisible(true);
 
         while (true)
-            waitForUserCommand();
+            try {
+                waitForUserCommand();
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
     }
 
     /**
@@ -64,37 +111,23 @@ public class MyClass {
      * stop time : Time that user wants to terminate processing the json Files.
      *
      * @return returns nothing
+     * @throws NoSuchElementException
+     * @throws IllegalStateException
      */
-    private static void waitForUserCommand() {
+    private static void waitForUserCommand() throws NoSuchElementException, IllegalStateException {
         Scanner scanner = new Scanner(System.in);
-        double startTime;
-        double stopTime;
-        try {
-            startTime = scanner.nextDouble();
-            stopTime = scanner.nextDouble();
-        } catch (InputMismatchException e) {
-            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
-            waitForUserCommand();
-            return;
-        } catch (NoSuchElementException e) {
-            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
-            waitForUserCommand();
-            return;
-        } catch (IllegalStateException e) {
-            JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
-            waitForUserCommand();
-            return;
-        }
-        Writer writer = new Writer(System.currentTimeMillis() - (long) (startTime * 60 * 1000), System.currentTimeMillis() - (long) (stopTime * 60 * 1000));
-        writer.start();
+        double startTime = scanner.nextDouble();
+        double stopTime = scanner.nextDouble();
+        Reader reader = new Reader(System.currentTimeMillis() - (long) (startTime * 60 * 1000), System.currentTimeMillis() - (long) (stopTime * 60 * 1000));
+        reader.start();
     }
 
     /**
      * This class gets useful information from any Json object that is in list ,
-     * then store them in some files
+     * then stores them in some files
      * The path that information stores in it , each 1 minute changes.
      */
-    private static class Parser extends Thread {
+    private static class Writer extends Thread {
 
         public void run() {
             long initialTime = System.currentTimeMillis();
@@ -124,6 +157,8 @@ public class MyClass {
 
                 if ((System.currentTimeMillis() - initialTime) > 1 * 60 * 1000) //1 * 60 *1000 is equals to 1 minute
                     try {
+                        textArea.setText(timeCounter + " minute passed.");
+                        timeCounter++;
                         System.out.println("1 minute passed.");
                         fileWriter.close();
                         fileWriter = new FileWriter(new File(PATH + System.currentTimeMillis()));
@@ -135,14 +170,18 @@ public class MyClass {
         }
     }
 
-    private static class Writer extends Thread {
+    /**
+     * This class reads and process files and get information from it ,
+     * then fills the hashMap.
+     */
+    private static class Reader extends Thread {
 
         private long startTime;
         private long terminateTime;
         private int firstIndex;
         private int lastIndex;
 
-        public Writer(long mStart, long mEnd) {
+        public Reader(long mStart, long mEnd) {
             startTime = mStart;
             terminateTime = mEnd;
         }
@@ -150,34 +189,33 @@ public class MyClass {
         public void run() {
             File directory = new File(PATH);
             String[] filesInDir = directory.list();
-            long[] longNums = new long[filesInDir.length];
+            long[] nameOfFiles = new long[filesInDir.length];
 
             for (int i = 0; i < filesInDir.length; i++) {
-                longNums[i] = Long.parseLong(filesInDir[i]);
+                nameOfFiles[i] = Long.parseLong(filesInDir[i]);
             }
 
-            quickSort(longNums, 0, filesInDir.length - 1);
+            quickSort(nameOfFiles, 0, filesInDir.length - 1);
 
             try {
-                for (int i = 0; i < longNums.length; i++) {
-                    if (longNums[i] >= startTime) {
+                for (int i = 0; i < nameOfFiles.length; i++) {
+                    if (nameOfFiles[i] >= startTime) {
                         firstIndex = i - 1;
                         break;
                     }
                 }
-                for (int i = longNums.length - 1; i >= 0; i--) {
-                    System.out.println(longNums[i]);
-                    if (longNums[i] <= terminateTime) {
+                for (int i = nameOfFiles.length - 1; i >= 0; i--) {
+                    if (nameOfFiles[i] <= terminateTime) {
                         lastIndex = i;
                         break;
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                JOptionPane.showMessageDialog(null, "There is no information in data base in time you want.", "Error", JOptionPane.ERROR_MESSAGE);
-                waitForUserCommand();
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Problem in processing the files.\nPlease enter inputs again.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            System.out.println("first index :" + firstIndex + " " + "last index:" + lastIndex);
+            System.out.println("First index :" + firstIndex + "     " + "Last index :" + lastIndex);
             for (int i = firstIndex; i <= lastIndex; i++) {
                 if (i == firstIndex) {
                     processSpecialFiles(new File(PATH + filesInDir[i]), startTime, "I am First File");
@@ -189,12 +227,50 @@ public class MyClass {
                 }
                 processCommonFiles(new File(PATH + filesInDir[i]));
             }
-            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentRepo(), "Output", JOptionPane.INFORMATION_MESSAGE);
-            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentActor(), "Output", JOptionPane.INFORMATION_MESSAGE);
+            resultText.setText(dataAnalyser.getMostFrequentActor(10) + "\n" + dataAnalyser.getMostFrequentRepo(10));
+            frame.repaint();
+            System.out.println(dataAnalyser.getMostFrequentActor(10));
+            System.out.println(dataAnalyser.getMostFrequentRepo(10));
+//            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentRepo(), "Output", JOptionPane.INFORMATION_MESSAGE);
+//            JOptionPane.showMessageDialog(null, dataAnalyser.getMostFrequentActor(), "Output", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    public static int partition(long arr[], int left, int right) {
+    private static class TextHandler implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == startText) {
+                startTime = Double.parseDouble(startText.getText());
+            } else {
+                terminateTime = Double.parseDouble(terminateText.getText());
+            }
+        }
+    }
+
+    private static class ButtonHandler implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                Reader reader = new Reader(System.currentTimeMillis() - (long) (startTime * 60 * 1000), System.currentTimeMillis() - (long) (terminateTime * 60 * 1000));
+                reader.start();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Incorrect Input . Enter a valid positive decimal number.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * This method being used for Quick Sort.
+     *
+     * @param arr   array that we want to sort.
+     * @param left  first index of array to start to sort.
+     * @param right last index of array to terminate sort.
+     * @return
+     */
+    private static int partition(long arr[], int left, int right) {
         int i = left, j = right;
         long tmp;
 
@@ -233,8 +309,14 @@ public class MyClass {
 
     }
 
+    /**
+     * This method reads files and gets information from it ,
+     * then store it in hashMap
+     *
+     * @param file
+     */
     private static void processCommonFiles(File file) {
-        System.err.println("I entered in processCommonFiles method");
+        System.out.println("Entering in the processCommonFiles method.");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -251,8 +333,15 @@ public class MyClass {
         }
     }
 
+    /**
+     * This method works like processCommonFiles method
+     *
+     * @param file       file that we want to process
+     * @param time       time that need to
+     * @param identifier
+     */
     private static void processSpecialFiles(File file, long time, String identifier) {
-        System.err.println("I entered in processSpecialFiles");
+        System.err.println("Entering in the processSpecialFiles method.");
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(file));
@@ -262,12 +351,10 @@ public class MyClass {
         String line;
         if (identifier.equals("I am First File"))
             try {
-                line = br.readLine();
-                System.out.println(line);
                 while ((line = br.readLine()) != null) {
                     String s[] = line.split(" ");
                     if (time > Long.parseLong(s[0])) {
-                        System.err.println("First file stated to process.");
+                        System.out.println("First file added to process.");
                         while ((line = br.readLine()) != null) {
                             String array[] = line.split(" ");
                             dataAnalyser.addRepoID(array[1]);
@@ -283,12 +370,14 @@ public class MyClass {
             }
         else
             try {
+                copyFileUsingApacheCommonsIO(file, new File("copyOfLastFile"));
+                br = new BufferedReader(new FileReader(new File("copyOfLastFile")));
                 while ((line = br.readLine()) != null) {
                     String s[] = line.split(" ");
                     dataAnalyser.addRepoID(s[1]);
                     dataAnalyser.addActorID(s[2]);
-                    if (Long.parseLong(s[0]) > time) ;
-                    break;
+                    if (Long.parseLong(s[0]) > time)
+                        break;
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -300,5 +389,9 @@ public class MyClass {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void copyFileUsingApacheCommonsIO(File source, File dest) throws IOException {
+        FileUtils.copyFile(source, dest);
     }
 }
