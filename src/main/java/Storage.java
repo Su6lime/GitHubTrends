@@ -21,6 +21,8 @@ public class Storage {
             sb.append(" ");
             sb.append(event.id);
             sb.append(" ");
+            sb.append(event.type);
+            sb.append(" ");
             sb.append(event.repo.id);
             sb.append(" ");
             sb.append(event.repo.name);

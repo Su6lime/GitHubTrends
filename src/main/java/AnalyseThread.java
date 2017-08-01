@@ -11,12 +11,19 @@ public class AnalyseThread extends Thread {
     private Long startTime, endTime;
     private String opearation;
     private DataAnalyser dataAnalyser;
+    private int numOfResult;
+    private Date startDate;
+    private Date endDate;
 
-    public AnalyseThread(long startTime, long endTime, String operation) {
+    public AnalyseThread(long startTime, long endTime, String operation, int numOfResults) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.opearation = operation;
+        this.numOfResult = numOfResults;
+        startDate = new Date(startTime);
+        endDate = new Date(endTime);
         dataAnalyser = new DataAnalyser();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @Override
@@ -33,28 +40,31 @@ public class AnalyseThread extends Thread {
             String[] data = scanner.nextLine().split(" ");
             Long timeStamp = Long.parseLong(data[0]);
             if(timeStamp >= startTime && timeStamp < endTime) {
-                dataAnalyser.addRepoID(data[2]);
-                dataAnalyser.addActorID(data[4]);
+                dataAnalyser.addType(data[2]);
+                dataAnalyser.addRepoID(data[3]);
+                dataAnalyser.addActorID(data[5]);
             }
         }
-        String result = "from " + startTime + " to " + endTime + "\n";
+        String result = "from " + startDate + " to " + endDate + "\n";
         switch (opearation) {
+            case "Type":
+                result += dataAnalyser.getMostFrequentType(numOfResult);
+                break;
             case "Hot":
-                result += dataAnalyser.getMostFrequentRepo();
+                result += dataAnalyser.getMostFrequentRepo(numOfResult);
                 break;
             case "Dev":
-                result += dataAnalyser.getMostFrequentActor();
+                result += dataAnalyser.getMostFrequentActor(numOfResult);
                 break;
         }
         storeResults(result);
+        System.out.println("Done!");
     }
 
     private void storeResults(String result) {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        Date startDate = new Date(startTime);
-        Date endDate = new Date(endTime);
         try {
-            FileWriter fw = new FileWriter("Query result for " + opearation + " from " + startDate + " to " + endDate + ".txt");
+
+            FileWriter fw = new FileWriter("Results/Query result for " + opearation + " from " + startDate + " to " + endDate + ".txt");
             fw.write(result);
             fw.close();
         } catch (IOException e) {

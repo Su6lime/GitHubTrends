@@ -5,8 +5,9 @@ import java.util.*;
  */
 public class DataAnalyser {
 
-    private static HashMap<String, Integer> repoFrequency = new HashMap();
+    private HashMap<String, Integer> repoFrequency = new HashMap();
     private HashMap<String, Integer> actorFrequency = new HashMap();
+    private HashMap<String, Integer> typeFrequency = new HashMap();
 
     synchronized public void addRepoID(String ID) {
         Integer oldValue = repoFrequency.get(ID);
@@ -14,28 +15,6 @@ public class DataAnalyser {
             repoFrequency.put(ID, 1 + oldValue);
         else
             repoFrequency.put(ID, 1);
-    }
-
-    synchronized public StringBuilder getMostFrequentRepo(int num) {
-
-        StringBuilder result = new StringBuilder();
-        String keys[] = repoFrequency.keySet().toArray(new String[0]);
-        int values[] = new int[keys.length];
-
-        copyValuesFromHashMapToArray(keys, values , "Repo");
-        quickSort(keys, values, 0, values.length - 1);
-
-        int counter = 1;
-        result.append("Num of Actors : " + repoFrequency.size() + "\n");
-        while (num > 0) {
-            result.append(counter);
-            result.append("     ActorId : " + keys[keys.length - counter]);
-            result.append("     Frequency : " + values[values.length - counter]);
-            result.append("\n");
-            counter++;
-            num--;
-        }
-        return result;
     }
 
     synchronized public void addActorID(String ID) {
@@ -46,39 +25,52 @@ public class DataAnalyser {
             actorFrequency.put(ID, 1);
     }
 
-    synchronized public StringBuilder getMostFrequentActor(int num) {
-        StringBuilder result = new StringBuilder();
+    synchronized public void addType(String type) {
+        Integer oldValue = typeFrequency.get(type);
+        if (oldValue != null)
+            typeFrequency.put(type, 1 + oldValue);
+        else
+            typeFrequency.put(type, 1);
+    }
+
+    synchronized public String getMostFrequentRepo(int num) {
+
+        String keys[] = repoFrequency.keySet().toArray(new String[0]);
+        int values[] = new int[keys.length];
+
+        copyValuesFromHashMapToArray(keys, values , repoFrequency);
+        quickSort(keys, values, 0, values.length - 1);
+
+
+        return "Num of Repositories : " + repoFrequency.size() + "\n" + printResult(keys, values, num, "RepoID");
+    }
+
+    synchronized public String getMostFrequentActor(int num) {
         String keys[] = actorFrequency.keySet().toArray(new String[0]);
         int values[] = new int[keys.length];
 
-        copyValuesFromHashMapToArray(keys, values , "Actor");
+        copyValuesFromHashMapToArray(keys, values , actorFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
-        int counter = 1;
-        result.append("Num of Repositories : " + actorFrequency.size() + "\n");
-        while (num > 0) {
-            result.append(counter);
-            result.append("     RepoId : " + keys[keys.length - counter]);
-            result.append("     Frequency : " + values[values.length - counter]);
-            result.append("\n");
-            counter++;
-            num--;
-        }
-        return result;
+        return "Num of Actors : " + actorFrequency.size() + "\n" + printResult(keys, values, num, "ActorID");
     }
 
-    private void copyValuesFromHashMapToArray(String[] keys, int[] values, String msg) {
+    synchronized public String getMostFrequentType(int num) {
+        String keys[] = typeFrequency.keySet().toArray(new String[0]);
+        int values[] = new int[keys.length];
+
+        copyValuesFromHashMapToArray(keys, values , typeFrequency);
+        quickSort(keys, values, 0, values.length - 1);
+
+        return "Num of Actors : " + typeFrequency.size() + "\n" + printResult(keys, values, num, "Type");
+    }
+
+    private void copyValuesFromHashMapToArray(String[] keys, int[] values, HashMap<String, Integer> map) {
         int counter = 0;
-        if (msg.equals("Actor"))
-            for (String repoid : keys) {
-                values[counter] = actorFrequency.get(repoid);
-                counter++;
-            }
-        else
-            for (String repoid : keys) {
-                values[counter] = repoFrequency.get(repoid);
-                counter++;
-            }
+        for (String repoid : keys) {
+            values[counter] = map.get(repoid);
+            counter++;
+        }
     }
 
     private int partition(String[] keys, int[] values, int left, int right) {
@@ -111,7 +103,6 @@ public class DataAnalyser {
         return i;
     }
 
-
     private void quickSort(String keys[], int values[], int left, int right) {
 
         int index = partition(keys, values, left, right);
@@ -123,5 +114,22 @@ public class DataAnalyser {
         if (index < right)
 
             quickSort(keys, values, index, right);
+    }
+
+    private String printResult(String[] keys, int[] values, int num, String oparation){
+        StringBuilder result = new StringBuilder();
+
+        if(keys.length < num)
+            num = keys.length;
+
+        for(int i=1; i <= num; i++) {
+            result
+                    .append(i)
+                    .append("     " + oparation +" : " + keys[keys.length - i])
+                    .append("     Frequency : " + values[values.length - i])
+                    .append("\n");
+        }
+
+        return result.toString();
     }
 }
