@@ -4,7 +4,6 @@
 
 import com.satori.rtm.*;
 import com.satori.rtm.model.*;
-import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
