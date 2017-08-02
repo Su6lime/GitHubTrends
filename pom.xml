@@ -28,12 +28,35 @@
                     <execution>
                         <phase>package</phase>
                         <configuration>
-                            <mainClass>UI</mainClass>
+                            <mainClass>Main</mainClass>
                             <attachToBuild>true</attachToBuild>
-                            <filename>GitHubTrendsUI.${project.packaging}</filename>
+                            <filename>GitHubTrendsGUI.${project.packaging}</filename>
                         </configuration>
                         <goals>
                             <goal>one-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>UI</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id><!-- this is used for inheritance merges -->
+                        <phase>package</phase><!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -56,5 +79,6 @@
             <version>1.1.1</version>
         </dependency>
     </dependencies>
+
 
 </project>

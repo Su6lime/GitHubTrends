@@ -38,7 +38,7 @@ public class DataAnalyser {
         String keys[] = repoFrequency.keySet().toArray(new String[0]);
         int values[] = new int[keys.length];
 
-        copyValuesFromHashMapToArray(keys, values , repoFrequency);
+        copyValuesFromHashMapToArray(keys, values, repoFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
 
@@ -49,7 +49,7 @@ public class DataAnalyser {
         String keys[] = actorFrequency.keySet().toArray(new String[0]);
         int values[] = new int[keys.length];
 
-        copyValuesFromHashMapToArray(keys, values , actorFrequency);
+        copyValuesFromHashMapToArray(keys, values, actorFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
         return "Num of Actors : " + actorFrequency.size() + "\n\n" + printResult(keys, values, num, "ActorID");
@@ -59,7 +59,7 @@ public class DataAnalyser {
         String keys[] = typeFrequency.keySet().toArray(new String[0]);
         int values[] = new int[keys.length];
 
-        copyValuesFromHashMapToArray(keys, values , typeFrequency);
+        copyValuesFromHashMapToArray(keys, values, typeFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
         return "Num of Types : " + typeFrequency.size() + "\n\n" + printResult(keys, values, num, "Type");
@@ -67,8 +67,8 @@ public class DataAnalyser {
 
     private void copyValuesFromHashMapToArray(String[] keys, int[] values, HashMap<String, Integer> map) {
         int counter = 0;
-        for (String repoid : keys) {
-            values[counter] = map.get(repoid);
+        for (String k : keys) {
+            values[counter] = map.get(k);
             counter++;
         }
     }
@@ -116,16 +116,16 @@ public class DataAnalyser {
             quickSort(keys, values, index, right);
     }
 
-    private String printResult(String[] keys, int[] values, int num, String oparation){
+    private String printResult(String[] keys, int[] values, int num, String operation) {
         StringBuilder result = new StringBuilder();
 
-        if(keys.length < num)
+        if (keys.length < num)
             num = keys.length;
 
-        for(int i=1; i <= num; i++) {
+        for (int i = 1; i <= num; i++) {
             result
                     .append(i)
-                    .append("     " + oparation +" : " + keys[keys.length - i])
+                    .append("     " + operation + " : " + keys[keys.length - i])
                     .append("     Frequency : " + values[values.length - i])
                     .append("\n");
         }
