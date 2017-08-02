@@ -228,6 +228,7 @@ public class Main {
 
             dataAnalyser = new DataAnalyser();
 
+            System.out.println("salam");
             for (int i = 0; i < filesInDir.length; i++) {
                 nameOfFiles[i] = Long.parseLong(filesInDir[i]);
             }
