@@ -224,7 +224,10 @@ public class Main {
             long[] nameOfFiles = new long[filesInDir.length];
 
             System.out.println("Number of files in the directory : " + filesInDir.length);
+            System.out.println("--------------------------------------------------------");
+
             dataAnalyser = new DataAnalyser();
+
             for (int i = 0; i < filesInDir.length; i++) {
                 nameOfFiles[i] = Long.parseLong(filesInDir[i]);
             }
@@ -258,10 +261,10 @@ public class Main {
 //                    continue;
 //                }
                 if (i == lastIndex) {
-                    processSpecialFiles(new File(PATH + filesInDir[i]), startTime, "I am Last File");
+                    processSpecialFiles(new File(PATH + nameOfFiles[i]), startTime, "I am Last File");
                     continue;
                 }
-                processCommonFiles(new File(PATH + filesInDir[i]));
+                processCommonFiles(new File(PATH + nameOfFiles[i]));
             }
             switch (mode) {
                 case "actor":
