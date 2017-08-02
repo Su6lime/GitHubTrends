@@ -9,7 +9,7 @@ import java.util.TimeZone;
 public class AnalyseThread extends Thread {
 
     private Long startTime, endTime;
-    private String opearation;
+    private String operation;
     private DataAnalyser dataAnalyser;
     private int numOfResult;
     private Date startDate;
@@ -18,7 +18,7 @@ public class AnalyseThread extends Thread {
     public AnalyseThread(long startTime, long endTime, String operation, int numOfResults) {
         this.startTime = startTime;
         this.endTime = endTime;
-        this.opearation = operation;
+        this.operation = operation;
         this.numOfResult = numOfResults;
         startDate = new Date(startTime);
         endDate = new Date(endTime);
@@ -33,20 +33,33 @@ public class AnalyseThread extends Thread {
             fileReader = new FileReader("Data.txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            System.out.println("fail to reach Data");
+            return;
         }
 
         Scanner scanner = new Scanner(fileReader);
+        int badInput = 0;
         while (scanner.hasNext()) {
             String[] data = scanner.nextLine().split(" ");
-            Long timeStamp = Long.parseLong(data[0]);
+            if(data.length != 6) {
+                badInput ++;
+                continue;
+            }
+            Long timeStamp;
+            try {
+                timeStamp = Long.parseLong(data[0]);
+            } catch (NumberFormatException e) {
+                badInput ++;
+                continue;
+            }
             if(timeStamp >= startTime && timeStamp < endTime) {
                 dataAnalyser.addType(data[2]);
                 dataAnalyser.addRepoID(data[3]);
                 dataAnalyser.addActorID(data[5]);
             }
         }
-        String result = "from " + startDate + " to " + endDate + "\n";
-        switch (opearation) {
+        String result = "from " + startDate + " to " + endDate + "\tBad Inputs = " + badInput + "\n\n";
+        switch (operation) {
             case "Type":
                 result += dataAnalyser.getMostFrequentType(numOfResult);
                 break;
@@ -63,8 +76,11 @@ public class AnalyseThread extends Thread {
 
     private void storeResults(String result) {
         try {
+            File dir = new File("Results");
+            dir.mkdir();
 
-            FileWriter fw = new FileWriter("Results/Query result for " + opearation + " from " + startDate + " to " + endDate + ".txt");
+            FileWriter fw = new FileWriter("Results/Query result for " + operation
+                    + " from " + startDate + " to " + endDate + ".txt");
             fw.write(result);
             fw.close();
         } catch (IOException e) {

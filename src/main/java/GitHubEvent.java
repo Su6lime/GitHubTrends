@@ -5,8 +5,8 @@ import com.sun.xml.internal.bind.v2.TODO;
  */
 public class GitHubEvent {
 
-    String id;
-    String type;
+    private String id;
+    private String type;
 
 //    TODO get public attribute
 //    @JsonProperty("public")
@@ -15,16 +15,42 @@ public class GitHubEvent {
     //TODO get CreatedAt and translate it to miliseconds
 
 
-    Actor actor;
-    Repo repo;
+    private Actor actor;
+    private Repo repo;
+
+    public String getId() {
+        return id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Actor getActor() {
+        return actor;
+    }
+
+    public Repo getRepo() {
+        return repo;
+    }
 
     public class Actor {
-        String id;
+        private String id;
 
+        public String getId() {
+            return id;
+        }
     }
     public class Repo {
-        String id;
-        String name;
+        private String id;
+        private String name;
 
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }

@@ -62,7 +62,7 @@ public class DataAnalyser {
         copyValuesFromHashMapToArray(keys, values , typeFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
-        return "Num of Actors : " + typeFrequency.size() + "\n" + printResult(keys, values, num, "Type");
+        return "Num of Types : " + typeFrequency.size() + "\n" + printResult(keys, values, num, "Type");
     }
 
     private void copyValuesFromHashMapToArray(String[] keys, int[] values, HashMap<String, Integer> map) {

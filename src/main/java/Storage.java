@@ -5,35 +5,38 @@ import java.io.*;
  */
 public class Storage {
 
-    private static FileWriter fw;
-
-    static {
+    synchronized public static void storeInFile(GitHubEvent event) {
+        FileWriter fw = null;
         try {
             fw = new FileWriter("Data.txt", true);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
-    }
 
-    public static void storeInFile(GitHubEvent event) {
         StringBuilder sb = new StringBuilder(100);
             sb.append(System.currentTimeMillis());
             sb.append(" ");
-            sb.append(event.id);
+            sb.append(event.getId());
             sb.append(" ");
-            sb.append(event.type);
+            sb.append(event.getType());
             sb.append(" ");
-            sb.append(event.repo.id);
+            sb.append(event.getRepo().getId());
             sb.append(" ");
-            sb.append(event.repo.name);
+            sb.append(event.getRepo().getName());
             sb.append(" ");
-            sb.append(event.actor.id);
+            sb.append(event.getActor().getId());
             sb.append("\n");
         try {
             fw.write(sb.toString());
-            fw.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                fw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
