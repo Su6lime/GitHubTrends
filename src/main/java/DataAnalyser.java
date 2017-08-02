@@ -42,7 +42,7 @@ public class DataAnalyser {
         quickSort(keys, values, 0, values.length - 1);
 
 
-        return "Num of Repositories : " + repoFrequency.size() + "\n" + printResult(keys, values, num, "RepoID");
+        return "Num of Repositories : " + repoFrequency.size() + "\n\n" + printResult(keys, values, num, "RepoID");
     }
 
     synchronized public String getMostFrequentActor(int num) {
@@ -52,7 +52,7 @@ public class DataAnalyser {
         copyValuesFromHashMapToArray(keys, values , actorFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
-        return "Num of Actors : " + actorFrequency.size() + "\n" + printResult(keys, values, num, "ActorID");
+        return "Num of Actors : " + actorFrequency.size() + "\n\n" + printResult(keys, values, num, "ActorID");
     }
 
     synchronized public String getMostFrequentType(int num) {
@@ -62,7 +62,7 @@ public class DataAnalyser {
         copyValuesFromHashMapToArray(keys, values , typeFrequency);
         quickSort(keys, values, 0, values.length - 1);
 
-        return "Num of Types : " + typeFrequency.size() + "\n" + printResult(keys, values, num, "Type");
+        return "Num of Types : " + typeFrequency.size() + "\n\n" + printResult(keys, values, num, "Type");
     }
 
     private void copyValuesFromHashMapToArray(String[] keys, int[] values, HashMap<String, Integer> map) {

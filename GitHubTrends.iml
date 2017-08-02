@@ -11,9 +11,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
-    <orderEntry type="library" name="Maven: junit:junit:4.10" level="project" />
-    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" name="Maven: com.satori:satori-rtm-sdk:1.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.satori:satori-rtm-sdk-core:1.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.neovisionaries:nv-websocket-client:1.31" level="project" />

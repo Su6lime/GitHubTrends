@@ -75,16 +75,23 @@ public class AnalyseThread extends Thread {
     }
 
     private void storeResults(String result) {
+        FileWriter fw = null;
         try {
             File dir = new File("Results");
             dir.mkdir();
 
-            FileWriter fw = new FileWriter("Results/Query result for " + operation
+            fw = new FileWriter("Results/Query result for " + operation
                     + " from " + startDate + " to " + endDate + ".txt");
             fw.write(result);
-            fw.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("fail to write in file");
+        } finally {
+            try {
+                fw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
